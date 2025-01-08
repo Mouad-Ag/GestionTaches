@@ -1,0 +1,11 @@
+C:\GestionTaches\bin\Debug\GestionTaches.exe.config
+C:\GestionTaches\bin\Debug\GestionTaches.exe
+C:\GestionTaches\bin\Debug\GestionTaches.pdb
+C:\GestionTaches\obj\Debug\GestionTaches.csproj.AssemblyReference.cache
+C:\GestionTaches\obj\Debug\GestionTaches.Properties.Resources.resources
+C:\GestionTaches\obj\Debug\GestionTaches.csproj.GenerateResource.cache
+C:\GestionTaches\obj\Debug\GestionTaches.csproj.CoreCompileInputs.cache
+C:\GestionTaches\obj\Debug\GestionTaches.exe
+C:\GestionTaches\obj\Debug\GestionTaches.pdb
+C:\GestionTaches\obj\Debug\GestionTaches.AjouteTache.resources
+C:\GestionTaches\obj\Debug\GestionTaches.AjoutObjectif.resources

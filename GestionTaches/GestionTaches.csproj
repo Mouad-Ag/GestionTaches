@@ -46,14 +46,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Form1.cs">
+    <Compile Include="AjouteTache.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
+    <Compile Include="AjouteTache.Designer.cs">
+      <DependentUpon>AjouteTache.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AjoutObjectif.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AjoutObjectif.Designer.cs">
+      <DependentUpon>AjoutObjectif.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AjouteTache.resx">
+      <DependentUpon>AjouteTache.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AjoutObjectif.resx">
+      <DependentUpon>AjoutObjectif.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
