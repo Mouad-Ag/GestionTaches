@@ -11,3 +11,8 @@ C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches
 C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionTaches.FormTaches.resources
 C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\bin\Debug\MaterialSkin.dll
 C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionT.1ACA077B.Up2Date
+C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionTaches.FormAccueil.resources
+C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionTaches.AjouteTache.resources
+C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionTaches.AjoutObjectif.resources
+C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionTaches.login.resources
+C:\Users\acer\Desktop\Lst\_Me_\Systèmes d'Information\Mini-projet\GestionTaches\obj\Debug\GestionTaches.SignUp.resources

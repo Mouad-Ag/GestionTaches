@@ -49,6 +49,36 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AjouteTache.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AjouteTache.Designer.cs">
+      <DependentUpon>AjouteTache.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AjoutObjectif.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AjoutObjectif.Designer.cs">
+      <DependentUpon>AjoutObjectif.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FormAccueil.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormAccueil.Designer.cs">
+      <DependentUpon>FormAccueil.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormObj.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -63,6 +93,21 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AjouteTache.resx">
+      <DependentUpon>AjouteTache.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AjoutObjectif.resx">
+      <DependentUpon>AjoutObjectif.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormAccueil.resx">
+      <DependentUpon>FormAccueil.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormObj.resx">
       <DependentUpon>FormObj.cs</DependentUpon>
     </EmbeddedResource>
@@ -98,6 +143,78 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="bg2.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\accueil.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AC.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\TC.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\LO.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RT.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ACT.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\MD.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AJ.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BG.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BG1.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\User.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pass.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AR1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AR2.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AP4.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AP0.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AP.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BGG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BAG.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\APP.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AAA.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\0AP.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ARPL.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -14,25 +14,12 @@ namespace GestionTaches
 {
     public partial class FormObj : Form
     {
-        private Timer timerNotifications;
-
-        public FormObj()
+        
+        private int Id_utilisateur;
+        public FormObj(int id_utilisateur)
         {
+            Id_utilisateur = id_utilisateur;
             InitializeComponent();
-            timerNotifications = new Timer();
-            try
-            {
-                // Intervalle de 20s (en millisecondes)
-                timerNotifications.Interval = 20000;
-                // Activation du Timer
-                timerNotifications.Enabled = true;
-                // Liaison de l'événement Tick
-                timerNotifications.Tick += TimerNotifications_Tick;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur lors du démarrage du Timer : {ex.Message}");
-            }
             AjouterColonnesBoutons();
 
             dgvNonCommence.CellContentClick += dgv_CellContentClick;
@@ -57,6 +44,18 @@ namespace GestionTaches
                 dgvNonCommence.Columns.Add(btnAfficherTachesNonCommence);
             }
 
+            if (!dgvNonCommence.Columns.Contains("btnSupprimerNonCommence"))
+            {
+                DataGridViewButtonColumn btnSupprimerNonCommence = new DataGridViewButtonColumn
+                {
+                    Name = "btnSupprimerNonCommence",
+                    HeaderText = "Supprimer",
+                    Text = "Supprimer",
+                    UseColumnTextForButtonValue = true
+                };
+                dgvNonCommence.Columns.Add(btnSupprimerNonCommence);
+            }
+
             // Pour dgvEnCours
             if (!dgvEnCours.Columns.Contains("btnAfficherTachesEnCours"))
             {
@@ -68,6 +67,18 @@ namespace GestionTaches
                     UseColumnTextForButtonValue = true
                 };
                 dgvEnCours.Columns.Add(btnAfficherTachesEnCours);
+            }
+
+            if (!dgvEnCours.Columns.Contains("btnSupprimerEnCours"))
+            {
+                DataGridViewButtonColumn btnSupprimerEnCours = new DataGridViewButtonColumn
+                {
+                    Name = "btnSupprimerEnCours",
+                    HeaderText = "Supprimer",
+                    Text = "Supprimer",
+                    UseColumnTextForButtonValue = true
+                };
+                dgvEnCours.Columns.Add(btnSupprimerEnCours);
             }
 
             // Pour dgvTermine
@@ -82,46 +93,21 @@ namespace GestionTaches
                 };
                 dgvTermine.Columns.Add(btnAfficherTachesTermine);
             }
-        }
 
-        private void VerifierNotifications()
-        {
-            string connectionString = "Server=LAPULGA\\SQLEXPRESS;Database=GestionTachesDB;Trusted_Connection=True;";
-            using (SqlConnection con = new SqlConnection(connectionString))
+            if (!dgvTermine.Columns.Contains("btnSupprimerTermine"))
             {
-                try
+                DataGridViewButtonColumn btnSupprimerTermine = new DataGridViewButtonColumn
                 {
-                    con.Open();
-                    string query = "SELECT message FROM Notification WHERE date_envoie = @DateActuelle";
-                    SqlCommand cmd = new SqlCommand(query, con);
-                    cmd.Parameters.AddWithValue("@DateActuelle", DateTime.Now);
-                    SqlDataReader reader = cmd.ExecuteReader();
-                    
-                    while (reader.Read())
-                    {
-                        string message = reader["message"].ToString();
-                        // Affichage de la notification
-                        notifyIconApp.BalloonTipTitle = "Notification";
-                        notifyIconApp.BalloonTipText = message;
-                        notifyIconApp.ShowBalloonTip(5000);
-                    }
-
-                    reader.Close();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Erreur lors de la vérification des notifications : {ex.Message}");
-                }
+                    Name = "btnSupprimerTermine",
+                    HeaderText = "Supprimer",
+                    Text = "Supprimer",
+                    UseColumnTextForButtonValue = true
+                };
+                dgvTermine.Columns.Add(btnSupprimerTermine);
             }
         }
 
-        private void TimerNotifications_Tick(object sender, EventArgs e)
-        {
-            // Débogage pour vérifier que cet événement est bien déclenché
-            MessageBox.Show("Le TimerNotifications_Tick a été déclenché.");
-            // Appel de la méthode pour vérifier les notifications
-            VerifierNotifications();
-        }
+
 
         private DataTable GetObjectifsParStatut(string statut, int idUtilisateur)
         {
@@ -153,10 +139,9 @@ namespace GestionTaches
 
         private void ChargerObjectifs()
         {
-            int idUtilisateur = 5;
-            dgvNonCommence.DataSource = GetObjectifsParStatut("Non commencé", idUtilisateur);
-            dgvEnCours.DataSource = GetObjectifsParStatut("En cours", idUtilisateur);
-            dgvTermine.DataSource = GetObjectifsParStatut("Terminé", idUtilisateur);
+            dgvNonCommence.DataSource = GetObjectifsParStatut("Non commencé", Id_utilisateur);
+            dgvEnCours.DataSource = GetObjectifsParStatut("En cours", Id_utilisateur);
+            dgvTermine.DataSource = GetObjectifsParStatut("Terminé", Id_utilisateur);
         }
 
         private void UpdateObjectifsFromGrid(SqlConnection con, DataGridView dgv)
@@ -206,35 +191,93 @@ namespace GestionTaches
             }
         }
 
+        
+
+        private void SupprimerObjectifDansBase(int idObjectif)
+        {
+            string connectionString = "Server=LAPULGA\\SQLEXPRESS;Database=GestionTachesDB;Trusted_Connection=True;";
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                using (SqlCommand command = new SqlCommand("SupprimerObjectif", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+
+                    // Ajouter le paramètre de la procédure
+                    command.Parameters.AddWithValue("@Id_objectif", idObjectif);
+
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
         private void dgv_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
             DataGridView dgv = sender as DataGridView;
-            if (dgv == null || e.RowIndex < 0 || e.ColumnIndex < 0) return;
 
-            // Vérifiez si c'est une colonne bouton
-            if (dgv.Columns[e.ColumnIndex] is DataGridViewButtonColumn)
+            if (dgv.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.RowIndex >= 0)
             {
-                // Vérifiez quel DataGridView est concerné
-                string idObjectifCol = "Id_objectif"; // Nom de la colonne contenant l'identifiant
-                if (dgv.Rows[e.RowIndex].Cells[idObjectifCol].Value != null)
-                {
-                    int idObjectif = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells[idObjectifCol].Value);
+                string columnName = dgv.Columns[e.ColumnIndex].Name;
 
-                    // Ouvrir FormTaches
-                    FormTaches formTaches = new FormTaches(idObjectif);
-                    formTaches.ShowDialog();
+                if (columnName.Contains("btnSupprimer"))
+                {
+                    // Récupérer l'Id_objectif de la ligne sélectionnée
+                    int idObjectif = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells["Id_objectif"].Value);
+
+                    // Appeler la méthode de suppression
+                    SupprimerObjectifDansBase(idObjectif);
+
+                    MessageBox.Show("Suppression réussie !");
+                    ChargerObjectifs();
+                }
+                else if (columnName.Contains("btnAfficherTaches"))
+                {
+
+                    if (dgv == null || e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+                    // Vérifiez si c'est une colonne bouton
+                    if (dgv.Columns[e.ColumnIndex] is DataGridViewButtonColumn)
+                    {
+                        // Vérifiez quel DataGridView est concerné
+                        string idObjectifCol = "Id_objectif"; // Nom de la colonne contenant l'identifiant
+                        if (dgv.Rows[e.RowIndex].Cells[idObjectifCol].Value != null)
+                        {
+                            int idObjectif = Convert.ToInt32(dgv.Rows[e.RowIndex].Cells[idObjectifCol].Value);
+                            // Ouvrir FormTaches
+                            FormTaches formTaches = new FormTaches(idObjectif, Id_utilisateur);
+                            formTaches.Show();
+                            this.Hide();
+                        }
+                    }
                 }
             }
         }
 
+
+
         private void btnAjouterTache_Click(object sender, EventArgs e)
         {
-            //...
+            AjoutObjectif obj =new AjoutObjectif(Id_utilisateur);
+            obj.ShowDialog();
         }
 
-        private void FormObj_Load(object sender, EventArgs e)
+        private void BtnActualiser_Click(object sender, EventArgs e)
         {
+            ChargerObjectifs();
+        }
 
+        private void btnRetour_Click(object sender, EventArgs e)
+        {
+            FormAccueil obj = new FormAccueil(Id_utilisateur);
+            obj.Show();
+            this.Hide();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            FormAccueil obj = new FormAccueil(Id_utilisateur);
+            obj.Show();
+            this.Hide();
         }
     }
 }

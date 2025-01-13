@@ -1,12 +1,7 @@
--- Création de la base de données
 CREATE DATABASE GestionTachesDB
-GO
-
--- Utilisation de la base de données
 USE GestionTachesDB
-GO
 
--- Création de la table Utilisateur
+--Creation des tables
 CREATE TABLE Utilisateur (
     Id_utilisateur INT IDENTITY(1,1) PRIMARY KEY,
     nom VARCHAR(255),
@@ -15,93 +10,156 @@ CREATE TABLE Utilisateur (
     email VARCHAR(255) UNIQUE,
     mot_de_passe VARCHAR(255)
 )
-GO
 
--- Création de la table Objectif
 CREATE TABLE Objectif (
     Id_objectif INT IDENTITY(1,1) PRIMARY KEY,
     titre VARCHAR(255),
     description TEXT,
     date_debut DATE,
     date_fin DATE,
-    statut VARCHAR(50) NOT NULL CHECK (statut IN ('Non commencé', 'En cours', 'Terminé')),
+    statut VARCHAR(50) NOT NULL CHECK (statut IN ('Non commencÃ©', 'En cours', 'TerminÃ©')),
     Id_utilisateur INT,
     FOREIGN KEY (Id_utilisateur) REFERENCES Utilisateur(Id_utilisateur)
 )
-GO
 
--- Création de la table Tache
 CREATE TABLE Tache (
     Id_tache INT IDENTITY(1,1) PRIMARY KEY,
     titre VARCHAR(255),
     description TEXT,
     date_debut DATE,
     date_limite DATE,
-    statut VARCHAR(50) NOT NULL CHECK (statut IN ('Non commencé', 'En cours', 'Terminé', 'Abandonné')),
+    statut VARCHAR(50) CHECK (statut IN ('Non commencÃ©', 'En cours', 'TerminÃ©', 'AbandonnÃ©')),
+    Priorite VARCHAR(50) CHECK (Priorite IN ('Haute', 'Moyenne', 'Basse')),
     Id_utilisateur INT,
     Id_objectif INT,
     FOREIGN KEY (Id_utilisateur) REFERENCES Utilisateur(Id_utilisateur),
     FOREIGN KEY (Id_objectif) REFERENCES Objectif(Id_objectif)
 )
-GO
 
--- Création de la table Notification
+select * from Tache
+
 CREATE TABLE Notification (
     Id_notification INT IDENTITY(1,1) PRIMARY KEY,
     date_envoie DATETIME,
     type VARCHAR(50),
-	message TEXT,
     Id_utilisateur INT,
     Id_objectif INT,
     Id_tache INT,
+    message TEXT,
+	affichage BIT DEFAULT 0,
     FOREIGN KEY (Id_utilisateur) REFERENCES Utilisateur(Id_utilisateur),
     FOREIGN KEY (Id_objectif) REFERENCES Objectif(Id_objectif),
     FOREIGN KEY (Id_tache) REFERENCES Tache(Id_tache)
 )
 GO
 
+--Login
+CREATE PROCEDURE VerifierUtilisateur (@Email NVARCHAR(50), @MotDePasse VARCHAR(50), @UtilisateurExiste BIT OUTPUT)
+AS
+SET @UtilisateurExiste = 0
+IF EXISTS (
+	SELECT 1 FROM GestionTachesDB.dbo.Utilisateur
+	WHERE email = @Email AND mot_de_passe = @MotDePasse
+)
+BEGIN
+	SET @UtilisateurExiste = 1
+END
+GO
+
+--Isrciption
+CREATE PROCEDURE InsererUtilisateur (@Nom VARCHAR(50), @Prenom VARCHAR(50), @DateNaissance DATE, @Email VARCHAR(50), @MotDePasse NVARCHAR(50))
+AS
 INSERT INTO GestionTachesDB.dbo.Utilisateur (nom, prenom, date_naissance, email, mot_de_passe)
-VALUES
-('Dupont', 'Jean', '1985-03-12', 'jean.dupont@example.com', 'motdepasse1'),
-('Martin', 'Alice', '1990-07-23', 'alice.martin@example.com', 'motdepasse2'),
-('Durand', 'Paul', '1982-11-05', 'paul.durand@example.com', 'motdepasse3')
+VALUES (@Nom, @Prenom, @DateNaissance, @Email, @MotDePasse)
 GO
 
-INSERT INTO GestionTachesDB.dbo.Objectif (titre, description, date_debut, date_fin, statut, Id_utilisateur)
-VALUES 
-('Objectif 1', 'Terminer le projet X', '2025-01-01', '2025-06-30', 'Non commencé', 1),
-('Objectif 2', 'Améliorer le processus Y', '2025-01-05', '2025-12-31', 'En cours', 2)
+CREATE PROCEDURE AjouterNotificationObjectif (@Id_utilisateur INT, @Id_objectif INT, @Titre NVARCHAR(255), @Statut VARCHAR(50), @Date_fin DATE)
+AS
+DECLARE @Message VARCHAR(MAX)
+IF DATEADD(DAY, -1, @Date_fin) = CAST(GETDATE() AS DATE) AND @Statut <> 'TerminÃ©'
+    SET @Message = 'Rappel : L''objectif "' + @Titre + '" approche de sa date limite (' + FORMAT(@Date_fin, 'yyyy-MM-dd') + '). Veuillez le terminer avant demain.'
+ELSE IF @Date_fin < GETDATE() AND @Statut <> 'TerminÃ©'
+    SET @Message = 'L''objectif "' + @Titre + '" est en retard. VÃ©rifiez la date de fin : ' + FORMAT(@Date_fin, 'yyyy-MM-dd') + '.'
+ELSE IF @Statut = 'Non commencÃ©'
+    SET @Message = 'Un nouvel objectif a Ã©tÃ© crÃ©Ã© : "' + @Titre + '".'
+ELSE IF @Statut = 'En cours'
+    SET @Message = 'L''objectif "' + @Titre + '" est maintenant en cours.'
+ELSE IF @Statut = 'TerminÃ©'
+    SET @Message = 'FÃ©licitations ! L''objectif "' + @Titre + '" a Ã©tÃ© terminÃ©.'
+ELSE
+    SET @Message = 'L''objectif "' + @Titre + '" a un statut inconnu.'
+INSERT INTO GestionTachesDB.dbo.Notification (date_envoie, type, message, Id_utilisateur, Id_objectif, affichage)
+VALUES (GETDATE(), 'Objectif', @Message, @Id_utilisateur, @Id_objectif, 0)
 GO
 
-INSERT INTO GestionTachesDB.dbo.Tache (titre, description, date_debut, date_limite, statut, Id_utilisateur, Id_objectif)
-VALUES 
-('Tâche 1', 'Préparer la présentation du projet X', '2025-01-01', '2025-01-10', 'Non commencé', 1, 1),
-('Tâche 2', 'Analyser les données du projet X', '2025-01-02', '2025-01-15', 'En cours', 1, 1),
-('Tâche 3', 'Organiser les réunions hebdomadaires', '2025-01-03', '2025-01-20', 'Terminé', 2, 2),
-('Tâche 4', 'Réviser la documentation du projet Y', '2025-01-04', '2025-01-25', 'Abandonné', 2, 2)
+--Notification
+CREATE PROCEDURE AjouterNotificationTache (@Id_utilisateur INT, @Id_tache INT, @Id_objectif INT, @Titre NVARCHAR(255), @Statut NVARCHAR(50), @Date_limite DATE)
+AS
+DECLARE @Message VARCHAR(MAX)
+IF DATEADD(DAY, -1, @Date_limite) = CAST(GETDATE() AS DATE) AND @Statut <> 'TerminÃ©'
+    SET @Message = 'Rappel : La tÃ¢che "' + @Titre + '" approche de sa date limite (' + FORMAT(@Date_limite, 'yyyy-MM-dd') + '). Veuillez la terminer avant demain.'
+ELSE IF @Date_limite < GETDATE() AND @Statut <> 'TerminÃ©'
+    SET @Message = 'La tÃ¢che "' + @Titre + '" est en retard. Date limite dÃ©passÃ©e : ' + FORMAT(@Date_limite, 'yyyy-MM-dd') + '.'
+ELSE IF @Statut = 'Non commencÃ©'
+    SET @Message = 'Une nouvelle tÃ¢che a Ã©tÃ© ajoutÃ©e : "' + @Titre + '".'
+ELSE IF @Statut = 'En cours'
+    SET @Message = 'La tÃ¢che "' + @Titre + '" est maintenant en cours.'
+ELSE IF @Statut = 'TerminÃ©'
+    SET @Message = 'La tÃ¢che "' + @Titre + '" a Ã©tÃ© complÃ©tÃ©e avec succÃ¨s.'
+ELSE IF @Statut = 'AbandonnÃ©'
+    SET @Message = 'La tÃ¢che "' + @Titre + '" a Ã©tÃ© abandonnÃ©e.'
+ELSE
+    SET @Message = 'La tÃ¢che "' + @Titre + '" a un statut inconnu.'
+INSERT INTO GestionTachesDB.dbo.Notification (date_envoie, type, message, Id_utilisateur, Id_objectif, Id_tache, affichage)
+VALUES (GETDATE(), 'TÃ¢che', @Message, @Id_utilisateur, @Id_objectif, @Id_tache, 0)
 GO
 
--- Insertion d'exemples de notifications
-INSERT INTO Notification (date_envoie, type, message, Id_utilisateur, Id_objectif, Id_tache)
-VALUES
-('2025-01-06 10:16:00', 'Rappel Tâche', 'N’oubliez pas de terminer la tâche 1.', 1, NULL, 1),
-('2025-01-06 15:00:00', 'Rappel Objectif', 'L’objectif 2 doit être complété aujourd’hui.', 1, 2, NULL),
-('2025-01-06 16:00:00', 'Notification Générale', 'Il est temps de planifier vos prochaines tâches.', 1, NULL, NULL);
+CREATE PROCEDURE RecupererEtMarquerNotifications (@IdUtilisateur INT)
+AS
+BEGIN
+    -- Temp table pour stocker les notifications Ã  afficher
+    CREATE TABLE #TempNotifications (
+        type VARCHAR(50),
+        message VARCHAR(MAX)
+    )
+    -- InsÃ©rer les notifications non affichÃ©es dans la table temporaire
+    INSERT INTO #TempNotifications (type, message)
+    SELECT type, message
+    FROM GestionTachesDB.dbo.Notification
+    WHERE Id_utilisateur = @IdUtilisateur
+      AND CAST(date_envoie AS DATE) = CAST(GETDATE() AS DATE)
+      AND affichage = 0; -- 'affichage' est une colonne qui marque les notifications dÃ©jÃ  montrÃ©es
+    -- Marquer ces notifications comme affichÃ©es
+    UPDATE GestionTachesDB.dbo.Notification
+    SET affichage = 1
+	WHERE Id_utilisateur = @IdUtilisateur
+      AND CAST(date_envoie AS DATE) = CAST(GETDATE() AS DATE)
+      AND affichage = 0
+    -- Retourner les notifications
+    SELECT * FROM #TempNotifications
+
+    DROP TABLE #TempNotifications
+END
+
+--Ajout
+CREATE PROCEDURE AjouterTache (@Titre VARCHAR(255), @Description TEXT, @DateDebut DATE, @DateFin DATE, @Statut NVARCHAR(50), @Priorite NVARCHAR(50), @IdUtilisateur INT, @IdObjectif INT)
+AS
+INSERT INTO GestionTachesDB.dbo.Tache (titre, description, date_debut, date_limite, statut, Priorite, Id_utilisateur, Id_objectif)
+VALUES (@Titre, @Description, @DateDebut, @DateFin, @Statut, @Priorite, @IdUtilisateur, @IdObjectif);
 GO
 
-INSERT INTO Notification (date_envoie, type, message, Id_utilisateur, Id_objectif, Id_tache)
-VALUES
-('2025-01-07 12:48:00', 'Rappel Tâche', 'N’oubliez pas de terminer cette nouvelle tâche.', 1, NULL, (SELECT MAX(Id_tache) FROM Tache));
-
-SELECT * FROM Notification WHERE date_envoie >= GETDATE();
-DELETE FROM Utilisateur
+CREATE PROCEDURE AjouterObjectif (@Titre VARCHAR(255), @Description TEXT, @DateDebut DATETIME, @DateFin DATETIME, @Statut VARCHAR(50), @Priorite VARCHAR(50), @IdUtilisateur INT)
+AS
+INSERT INTO GestionTachesDB.dbo.Objectif (titre, description, date_debut, date_fin, statut, Priorite, Id_utilisateur)
+VALUES (@Titre, @Description, @DateDebut, @DateFin, @Statut, @Priorite, @IdUtilisateur)
 GO
 
-alter FUNCTION GetTachesParStatutEtUtilisateur (@Statut VARCHAR(50), @Id_utilisateur INT, @Id_objectif INT) RETURNS TABLE
+--Affichage
+CREATE FUNCTION GetTachesParStatutEtUtilisateur (@Statut VARCHAR(50), @Id_utilisateur INT, @Id_objectif INT) RETURNS TABLE
 AS
 RETURN
 (
-    SELECT Id_tache, titre, description, date_debut, date_limite, statut
+    SELECT titre, description, Priorite, date_debut, date_limite, statut, Id_tache
     FROM GestionTachesDB.dbo.Tache
     WHERE statut = @Statut 
     AND Id_utilisateur = @Id_utilisateur
@@ -109,8 +167,18 @@ RETURN
 )
 GO
 
+CREATE FUNCTION GetObjectifsParStatutEtUtilisateur (@Statut VARCHAR(50), @Id_utilisateur INT) RETURNS TABLE
+AS
+RETURN
+(
+SELECT titre, description,  date_debut, date_fin, statut, Id_objectif
+FROM GestionTachesDB.dbo.Objectif
+WHERE statut = @Statut AND Id_utilisateur = @Id_utilisateur
+)
+GO
 
-CREATE PROCEDURE UpdateTache (@Id_tache INT, @Titre VARCHAR(255), @Description TEXT, @DateDebut DATE, @DateLimite DATE, @Statut VARCHAR(50))
+--Modification
+CREATE PROCEDURE UpdateTache (@Id_tache INT, @Titre VARCHAR(255), @Description TEXT, @DateDebut DATE, @DateLimite DATE, @Statut VARCHAR(50), @Priorite VARCHAR(50))
 AS
 UPDATE GestionTachesDB.dbo.Tache
 SET 
@@ -118,18 +186,9 @@ SET
     description = @Description,
     date_debut = @DateDebut,
     date_limite = @DateLimite,
-    statut = @Statut
+    statut = @Statut,
+	Priorite = @Priorite
 WHERE Id_tache = @Id_tache
-GO
-
-alter FUNCTION GetObjectifsParStatutEtUtilisateur (@Statut VARCHAR(50), @Id_utilisateur INT) RETURNS TABLE
-AS
-RETURN
-(
-SELECT Id_objectif, titre, description, date_debut, date_fin, statut
-FROM GestionTachesDB.dbo.Objectif
-WHERE statut = @Statut AND Id_utilisateur = @Id_utilisateur
-)
 GO
 
 CREATE PROCEDURE UpdateObjectif (@Id_objectif INT, @Titre VARCHAR(255), @Description TEXT, @DateDebut DATE, @DateFin DATE, @Statut VARCHAR(50))
@@ -146,31 +205,16 @@ WHERE Id_objectif = @Id_objectif
 END
 GO
 
-INSERT INTO Utilisateur (nom, prenom, date_naissance, email, mot_de_passe) 
-VALUES 
-('Dupont', 'Jean', '1990-01-15', 'jean.dupont@example.com', 'password123'),
-('Martin', 'Sophie', '1985-06-20', 'sophie.martin@example.com', 'mypassword'),
-('Doe', 'John', '1992-03-10', 'john.doe@example.com', 'john123');
-SELECT * FROM Objectif;
+--Suppression
+CREATE PROCEDURE SupprimerObjectif (@Id_objectif INT)
+AS
+DELETE FROM GestionTachesDB.dbo.Tache WHERE Id_objectif = @Id_objectif
+DELETE FROM GestionTachesDB.dbo.Notification WHERE Id_objectif = @Id_objectif
+DELETE FROM GestionTachesDB.dbo.Objectif WHERE Id_objectif = @Id_objectif
+GO
 
-
--- Objectifs pour l'utilisateur avec Id_utilisateur = 1 (Jean Dupont)
-INSERT INTO Objectif (titre, description, date_debut, date_fin, statut, Id_utilisateur) 
-VALUES 
-('Apprendre C#', 'Compléter le tutoriel C# en ligne', '2025-01-01', '2025-01-15', 'Non commencé', 5),
-('Créer une application', 'Développer une application Windows Forms', '2025-01-05', '2025-01-20', 'En cours', 5),
-('Préparer une présentation', 'Créer des diapositives pour le projet final', '2024-12-20', '2024-12-25', 'Terminé', 5);
-
--- Objectifs pour l'utilisateur avec Id_utilisateur = 2 (Sophie Martin)
-INSERT INTO Objectif (titre, description, date_debut, date_fin, statut, Id_utilisateur) 
-VALUES 
-('Lecture technique', 'Lire le livre sur les bases de données avancées', '2025-01-10', '2025-01-30', 'Non commencé', 6),
-('Rédiger un rapport', 'Préparer un rapport sur les nouvelles fonctionnalités', '2025-01-01', '2025-01-10', 'En cours', 6),
-('Finaliser un projet', 'Compléter le projet de développement web', '2024-12-01', '2024-12-15', 'Terminé', 6);
-
-INSERT INTO Tache (titre, description, date_debut, date_limite, statut, Id_utilisateur, Id_objectif)
-VALUES 
-('Configurer l’environnement', 'Installer Visual Studio et configurer le projet', '2025-01-01', '2025-01-05', 'Non commencé', 5, 7),
-('Créer le formulaire principal', 'Développer le formulaire Windows Forms principal', '2025-01-05', '2025-01-10', 'En cours', 5, 7),
-('Tester l’application', 'Exécuter des tests sur les fonctionnalités développées', '2025-01-15', '2025-01-20', 'En cours', 6, 8);
-
+CREATE PROCEDURE SupprimerTache (@Id_tache INT)
+AS
+DELETE FROM GestionTachesDB.dbo.Notification WHERE Id_tache = @Id_tache
+DELETE FROM GestionTachesDB.dbo.Tache WHERE Id_tache = @Id_tache
+GO

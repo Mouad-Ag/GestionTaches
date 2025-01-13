@@ -16,7 +16,7 @@ namespace GestionTaches
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormObj());
+            Application.Run(new login());
         }
     }
 }
